@@ -1,3 +1,13 @@
+# hardcoding this for similicity
+terraform {
+  backend "s3" {
+    bucket  = "harshc-tf-state"
+    key     = "simpleapi/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+  }
+}
+
 provider "aws" {
   region = var.region
 }

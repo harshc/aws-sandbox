@@ -5,11 +5,13 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.eks_cluster_version
 
-  vpc_id     = module.vpc.default_vpc_id
+  vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
   cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = false
+  cluster_endpoint_public_access  = true
+
+  cluster_enabled_log_types = ["api", "audit"]
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
@@ -26,8 +28,8 @@ module "eks" {
       max_size       = 3
       desired_size   = 1
       tags           = local.tags
-    }
-
+      subnet_ids     = module.vpc.private_subnets
+    },
     two = {
       name           = "node-group-2"
       instance_types = ["t3.small"]
@@ -35,9 +37,9 @@ module "eks" {
       max_size       = 3
       desired_size   = 1
       tags           = local.tags
+      subnet_ids     = module.vpc.private_subnets
     }
   }
 
   tags = local.tags
-
 }
