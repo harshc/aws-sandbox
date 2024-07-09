@@ -4,12 +4,6 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "github_assume_role" {
-  description = "IAM Role for Github to use"
-  type        = string
-  default     = "arn:aws:iam::905418382385:role/github_assume_role"
-}
-
 variable "cluster_name" {
   description = "Name of the EKS Cluster"
   type        = string

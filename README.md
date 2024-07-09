@@ -50,6 +50,8 @@ project/
 
 ### AWS Setup
 
+## Recommeded Approach is to setup OIDC for Github
+
 1. Create an OIDC provider for GitHub Actions in your AWS account.
 2. Create an IAM role with necessary permissions and trust relationship for GitHub Actions.
 3. The IAM role is used for role assumption in two places
