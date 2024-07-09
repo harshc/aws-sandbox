@@ -18,6 +18,9 @@ module "eks" {
 
     attach_cluster_primary_security_group = true
     create_security_group                 = false
+    iam_role_additional_policies = {
+      ecr_access = aws_iam_policy.ecr_access_policy.arn
+    }
   }
 
   eks_managed_node_groups = {
@@ -43,3 +46,5 @@ module "eks" {
 
   tags = local.tags
 }
+
+

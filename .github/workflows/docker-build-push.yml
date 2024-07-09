@@ -37,8 +37,20 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
+      - name: Check AWS CLI Connection
+        run: |
+          aws sts get-caller-identity
+          aws eks list-clusters
+
+      - name: Configure KubeCtl
+        run: |
+          aws eks --region us-east-1 update-kubeconfig --name us-east-1a-simpleapi
+          kubectl config view --raw
+
+      -name: 
       - name: Update Kube Config
         run: |
+          cd 
           aws eks get-token --cluster-name us-east-1a-simpleapi | kubectl apply -f -
 
       - name: Deploy to EKS
