@@ -1,0 +1,43 @@
+name: Cleanup Resources
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::905418382385:role/github_assume_role
+          role-session-name: githubworkflowsession
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Init Terraform
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Destroy all managed resources
+        run: |
+          cd terraform
+          terraform destroy -auto-approve
+
+      - name: Delete ECR Images
+        run: |
+          REPO_NAME=docker_images
+          IMAGE_IDS=$(aws ecr list-images --repository-name $REPO_NAME --query 'imageIds[*]' --output json)
+          if [ "$IMAGE_IDS" != "[]" ]; then
+              aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids "$IMAGE_IDS"
+          fi
