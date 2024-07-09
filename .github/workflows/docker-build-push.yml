@@ -1,0 +1,69 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: US-EAST-1
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag and push image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: docker_images
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Update Kube Config
+        run: aws eks get-token --cluster-name sandbox | kubectl apply -f -
+
+      - name: Deploy to EKS
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: docker_images
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          sed -i 's|docker_images/simpleapi:latest|'${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}'|' k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Wait for deployment to be ready
+        run: |
+          kubectl rollout status deployment/simpleapi
+
+      - name: Verify health check
+        run: |
+          ALB_DNS=$(kubectl get ingress simpleapi-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+          echo "Waiting for ALB to be ready..."
+          timeout 300 bash -c 'until nc -z -w 2 $0 80; do sleep 2; done' $ALB_DNS
+
+          echo "Performing healthcheck..."
+          HEALTH_CHECK_URL="http://$ALB_DNS/healthcheck"
+          RESPONSE=$(curl -sS -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+
+          if [ $RESPONSE -eq 200 ]; then
+            echo "Health check passed. Application is healthy."
+          else
+            echo "Health check failed. HTTP response code: $RESPONSE"
+            exit 1
+          fi

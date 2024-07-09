@@ -1,0 +1,9 @@
+#Git and IDE
+.git
+.gitignore
+.vscode
+README.md
+
+# include the app directory but nothing outside of it
+*
+!app/
