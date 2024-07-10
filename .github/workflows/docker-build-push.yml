@@ -73,7 +73,7 @@ jobs:
 
           echo "Performing healthcheck..."
           HEALTH_CHECK_URL="http://$ALB_DNS/healthcheck"
-          RESPONSE=$(curl -sS -o -k /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+          RESPONSE=$(curl -sS -o /dev/null -w "%{http_code}" -k $HEALTH_CHECK_URL)
 
           if [ $RESPONSE -eq 200 ]; then
             echo "Health check passed. Application is healthy."
