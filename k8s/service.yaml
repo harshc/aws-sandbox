@@ -10,3 +10,8 @@ spec:
       port: 80
       targetPort: 9000
   type: ClusterIP
+
+  # If you only need a simple load balancing setup and don't require advanced routing rules,
+  # using a service of type LoadBalancer is sufficient. Kubernetes will automatically create an ALB
+  # and configure it to route traffic to your pods.
+  # If using an ingress then set this as ClusterUp.

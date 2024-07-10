@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: simpleapi
-          image: 905418382385.dkr.ecr.us-east-1.amazonaws.com/docker_images:latest
+          # this will get replaced by the build pipeline in CI, For local you can hardcode the uri
+          image: docker_images/simpleapi:latest
           ports:
             - containerPort: 9000
           readinessProbe:
