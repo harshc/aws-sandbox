@@ -14,8 +14,8 @@ module "vpc" {
   enable_dns_hostnames = true
 
   public_subnet_tags = merge(local.tags, {
-    "k8s.cluster/${var.cluster_name}" = "shared"
-    "k8s.cluster/role/elb"            = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                    = "1"
   })
 
   private_subnet_tags = merge(local.tags, {

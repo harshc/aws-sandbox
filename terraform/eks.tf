@@ -17,7 +17,7 @@ module "eks" {
     ami_type = "AL2_x86_64"
 
     #attach_cluster_primary_security_group = true
-    create_security_group = false
+    create_security_group = true
     iam_role_additional_policies = {
       ecr_access = aws_iam_policy.ecr_access_policy.arn
     }

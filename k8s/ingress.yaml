@@ -4,7 +4,7 @@ metadata:
   name: simpleapi-ingress
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
-    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/target-type: ip
 # intentionally setting this to HTTP since I dont have the
 # time right now to setup my custom domain and set up ACM to authenticate against that for TLS termination
 spec:
