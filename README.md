@@ -4,10 +4,10 @@ This project demonstrates how to deploy a simple API to Amazon EKS (Elastic Kube
 
 ## Project Structure
 
+```
 project/
 ├── app/
 │ ├── app.py
-│ ├── wsgi.py
 │ ├── gunicorn.conf.py
 │ └── requirements.txt
 ├── k8s/
@@ -26,10 +26,11 @@ project/
 ├── .github/
 │ └── workflows/
 │ ├── docker-build-push.yml
-│ ├── terraform-deploy.yml  
+│ ├── terraform-deploy.yml
 │ └── cleanup.yml
 ├── Dockerfile
 └── README.md
+```
 
 ## Components
 
@@ -47,34 +48,6 @@ project/
 - Terraform installed locally (for testing)
 - AWS CLI configured with appropriate permissions
 - kubectl installed locally (for interacting with the cluster)
-
-### AWS Setup
-
-## Recommeded Approach is to setup OIDC for Github
-
-1. Create an OIDC provider for GitHub Actions in your AWS account.
-2. Create an IAM role with necessary permissions and trust relationship for GitHub Actions.
-3. The IAM role is used for role assumption in two places
-   3.1 In the Github Actions as
-
-```
- - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: <arn for the role used>
-          role-session-name: githubworkflowsession
-          aws-region: us-east-1
-```
-
-3.2 In the terraform as
-
-```
-variable "github_assume_role" {
-  description = "IAM Role for Github to use"
-  type        = string
-  default     = "arn for the role"
-}
-```
 
 ## Deployment
 
@@ -119,8 +92,8 @@ The EKS Deployment is configured as
 
 **Service Configuration**
 
-1. A `ClusterIP service` exposes port 80 from the EKS cluster and forwards to container port 9000
-2. An `IngressController` is attached to the EKS Cluster to setup an internet facing load balancer and route traffic to the service.
+1. A `ingress controller` exposes port 80 to the internet and forwards to to the cluster ALB
+2. A `internet-facing ALB` is attached to the EKS Cluster to route traffic to the service to the internal-elb and connect with the service on port `9000`
 
 **Platform**
 
@@ -128,13 +101,16 @@ The EKS Deployment is configured as
 2. NAT gateway is created in the VPC to communicate between the public and private subnets.
 3. EKS Cluster is created in 2 availability zones.
 4. An IAM role is created to attach to the ALB
-5. A ALB is created for the cluster
-6. All resources are tagged to track resource creation and ownership
+5. An IAM role is attached to the EKS cluster to pull images from ECR
+6. A ALB is created for the cluster
+7. All resources are tagged to track resource creation and ownership
 
 **Issues**
 
 1. There is a single NAT Gateway for both AZ's
 2. Intentionally chose to not use TLS termination since I did not want to setup my own domain for verification with ACM,
+3. Not all the variables are completely obfuscated for configuration management.
+4. AWS authN and authZ can be configured with OIDC
 
 ## Application
 

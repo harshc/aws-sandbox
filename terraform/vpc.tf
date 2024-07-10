@@ -13,19 +13,13 @@ module "vpc" {
   single_nat_gateway   = true
   enable_dns_hostnames = true
 
-  # add tagging so we can do cost monitoring as well as identify resources later. 
-  tags = merge(local.tags, {
-    # this way we know all the clusters that are using this as a shared resource
-    "k8s.cluster/${var.cluster_name}" = "shared"
-  })
-
   public_subnet_tags = merge(local.tags, {
     "k8s.cluster/${var.cluster_name}" = "shared"
     "k8s.cluster/role/elb"            = "1"
   })
 
   private_subnet_tags = merge(local.tags, {
-    "k8s.cluster/${var.cluster_name}" = "shared"
-    "k8s.cluster/role/internal-elb"   = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"           = "1"
   })
 }

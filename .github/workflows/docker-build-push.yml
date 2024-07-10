@@ -1,8 +1,9 @@
 name: Build and Push to ECR
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+  #push:
+  #  branches: [main]
 
 jobs:
   build-and-push:
@@ -36,7 +37,7 @@ jobs:
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
+          
       - name: Check AWS CLI Connection
         run: |
           aws sts get-caller-identity
@@ -44,7 +45,7 @@ jobs:
 
       - name: Configure KubeCtl
         run: |
-          aws eks --region us-east-1 update-kubeconfig --name us-east-1a-simpleapi
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name us-east-1a-simpleapi
           kubectl config view --raw
 
       -name: 
@@ -59,7 +60,7 @@ jobs:
           ECR_REPOSITORY: docker_images
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          sed -i 's|docker_images/simpleapi:latest|'${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}'|' k8s/deployment.yaml
+          sed -i 's|docker_images/simpleapi:latest|'${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}'|' k8s/deployment.yaml
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/ingress.yaml
