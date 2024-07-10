@@ -7,6 +7,7 @@ on:
 
 jobs:
   build-and-push:
+    name: "Build and Deploy"
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -37,7 +38,7 @@ jobs:
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
+
       - name: Check AWS CLI Connection
         run: |
           aws sts get-caller-identity
@@ -48,7 +49,6 @@ jobs:
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name us-east-1a-simpleapi
           kubectl config view --raw
 
-      -name: 
       - name: Update Kube Config
         run: |
           cd 
