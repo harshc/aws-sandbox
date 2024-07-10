@@ -49,11 +49,6 @@ jobs:
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name us-east-1a-simpleapi
           kubectl config view --raw
 
-      - name: Update Kube Config
-        run: |
-          cd 
-          aws eks get-token --cluster-name us-east-1a-simpleapi | kubectl apply -f -
-
       - name: Deploy to EKS
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
