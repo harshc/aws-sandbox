@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: simpleapi
-          image: docker_images/simpleapi:latest
+          image: 905418382385.dkr.ecr.us-east-1.amazonaws.com/docker_images:latest
           ports:
             - containerPort: 9000
           readinessProbe:
